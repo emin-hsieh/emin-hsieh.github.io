@@ -67,8 +67,8 @@ const margin = {
   bottom: 50,
   left: 50,
 };
-const width = 600;
-const height = 600;
+const width = 500;
+const height = 500;
 // the chart ought to be wider than taller
 const innerWidth = width - (margin.left + margin.right);
 const innerHeight = height - (margin.top + margin.bottom);
@@ -109,7 +109,8 @@ const attitudeScale = d3
 
 const personalityScale = d3
   .scaleLinear()
-  .domain(d3.extent(Object.values(personalitys)))
+  // .domain(d3.extent(Object.values(personalitys)))
+  .domain([personalitys.max, personalitys.min])
   .range([innerHeight - 50, 50]);
 
 // axes
@@ -340,21 +341,11 @@ dataPointsGroup
 
     dashedLines
       .append('path')
-      .attr('d', ({ personality }) => `M 0 0 v ${attitudeScale(personality) - attitudeScale(25)}`);
+      .attr('d', ({ personality, attitude }) => `M 0 0 v ${personalityScale(25) - personalityScale(personality)}`);
 
     dashedLines
       .append('path')
-      .attr('d', ({ attitude }) => `M 0 0 h ${personalityScale(attitude) - personalityScale(25)}`);
-
-    // include two labels centered on the axes, highlighting the matching values
-    const labels = tooltip
-      .append('g')
-      .attr('font-size', '0.6rem')
-      .attr('fill', 'hsl(227, 9%, 81%)');
-
-    const labelattitude = labels
-      .append('g')
-      .attr('transform', ({ personality }) => `translate(0 ${personalityScale(personalitys.max - personality)})`);
+      .attr('d', ({ attitude, personality }) => `M 0 0 h ${attitudeScale(25) - attitudeScale(attitude)}`);
 
     // detail a circle, with a darker fill and a larger radius
     tooltip
