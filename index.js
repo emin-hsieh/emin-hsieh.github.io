@@ -1,6 +1,6 @@
 /* DATA
 starting from an object describing the possible categories and matching colors
-the idea is to fabricate an array of data points with random percentage and count values
+the idea is to fabricate an array of data points with random personality and attitude values
 */
 const legend = [
   {
@@ -25,34 +25,31 @@ const legend = [
 const randomBetween = (min, max) => Math.floor(Math.random() * (max - min) + min);
 const randomItem = arr => arr[Math.floor(Math.random() * arr.length)];
 
-// minimum and maximum values for the percentage and user count
-const percentages = {
+// minimum and maximum values for the personality and user attitude
+const personalitys = {
   min: 10,
   max: 40,
 };
-const counts = {
+const attitudes = {
   min: 10,
   max: 40,
 };
 
 // function called to fabricate random data points
 const randomDataPoint = () => {
-  // compute a random percentage and count
-  const percentage = randomBetween(percentages.min, percentages.max);
-  const count = randomBetween(counts.min, counts.max);
+  // compute a random personality and attitude
+  const personality = randomBetween(personalitys.min, personalitys.max);
+  const attitude = randomBetween(attitudes.min, attitudes.max);
 
   // call the function once more if the data point were to be located in the bottom right corner of the viz
   // this to avoid overlaps with the legend
-  if (percentage < 20 && count > 7000) {
-    return randomDataPoint();
-  }
   // retrieve an item from the legend array
   const item = randomItem(legend);
 
-  /* return an object marrying the name and color with the percentage and user count */
+  /* return an object marrying the name and color with the personality and user attitude */
   return Object.assign({}, item, {
-    percentage,
-    count,
+    personality,
+    attitude,
   });
 };
 
@@ -60,7 +57,7 @@ const randomDataPoint = () => {
 const dataPoints = 1;
 // create an array of data points leveraging the utility functions
 const data = Array(dataPoints).fill('').map(randomDataPoint);
-console.log('data is ', data)// [ {name: "Yellow", color: "hsl(57, 96%, 64%)", percentage: 16, count: 5320} ]
+console.log('data is ', data)// [ {name: "Yellow", color: "hsl(57, 96%, 64%)", personality: 16, attitude: 5320} ]
 
 // VIZ
 // in the .viz container include an SVG element following the margin convention
@@ -83,13 +80,7 @@ const svg = d3
 
 //建立最外層的 container
 const outsideContainer = svg.append('g');
-// outsideContainer
-//   .append('rect')
-//   .attr('x', 0)
-//   .attr('y', 0)
-//   .attr('width', width)
-//   .attr('height', height)
-//   .attr('fill', 'none');
+
 //create root
 const group = svg
   .append('g')
@@ -106,36 +97,31 @@ group
   .attr('stroke', 'currentColor')
   .attr('stroke-width', .5);
 
-
-
-
 // quadrants and labels
 appendQuadrantsAndLabels(group)
 
 // scales
 // for both the x and y dimensions define linear scales, using the minimum and maximum values defined earlier
-const countScale = d3
+const attitudeScale = d3
   .scaleLinear()
-  .domain(d3.extent(Object.values(counts)))
+  .domain(d3.extent(Object.values(attitudes)))
   .range([50, innerWidth - 50]);
 
-const percentageScale = d3
+const personalityScale = d3
   .scaleLinear()
-  .domain(d3.extent(Object.values(percentages)))
+  .domain(d3.extent(Object.values(personalitys)))
   .range([innerHeight - 50, 50]);
 
 // axes
-const countAxis = d3
-  .axisBottom(countScale)
-  // .tickValues([10, 17, 25, 33, 40])
-  .ticks(counts.max - counts.min)
+const attitudeAxis = d3
+  .axisBottom(attitudeScale)
+  .ticks(attitudes.max - attitudes.min)
   .tickFormat(d => [10, 17, 25, 33, 40].includes(d) ? d : "");
 
-const percentageAxis = d3
-  .axisLeft(percentageScale)
-  .ticks(percentages.max - percentages.min)
+const personalityAxis = d3
+  .axisLeft(personalityScale)
+  .ticks(personalitys.max - personalitys.min)
   .tickFormat(d => [10, 17, 33, 40].includes(d) ? d : "");
-// .tickFormat(d => d);
 
 
 
@@ -143,8 +129,8 @@ const percentageAxis = d3
 group
   .append('g')
   .attr('transform', `translate(0 ${innerHeight / 2})`)
-  .attr('class', 'axis axis-count')
-  .call(countAxis)
+  .attr('class', 'axis axis-attitude')
+  .call(attitudeAxis)
   .selectAll("text")
   .style("text-anchor", (d, i) => d === 25 ? 'middle' : 'middle')
   .attr("transform", (d, i) => d === 25 ? "translate(5,5)rotate(-45)" : "")
@@ -152,25 +138,19 @@ group
 
 group
   .append('g')
-  .attr('class', 'axis axis-percentage')
+  .attr('class', 'axis axis-personality')
   .attr('transform', `translate(${innerWidth / 2} 0)`)
-  .call(percentageAxis);
-
-// remove the path describing the axes
-// d3
-//   .selectAll('.axis')
-//   .select('path')
-//   .remove();
+  .call(personalityAxis);
 
 // style the ticks to be shorter
 d3
-  .select('.axis-count')
+  .select('.axis-attitude')
   .selectAll('line')
   .attr('transform', `translate(0 -5)`)
   .attr('y2', 10);
 
 d3
-  .select('.axis-percentage')
+  .select('.axis-personality')
   .selectAll('line')
   .attr('transform', `translate(-5 0)`)
   .attr('x2', 10);
@@ -184,21 +164,23 @@ d3
 // include dotted lines for each tick and for both axes
 //畫中間的矩形
 d3
-  .select('.axis-count')
+  .select('.axis-attitude')
   .selectAll('g.tick')
   .filter((d, i) => d === 17 | d === 33)
   .append('path')
-  .attr('d', `M 0 -${innerHeight / 4 - 20} v ${innerHeight / 2 - 40}`)
+  .attr('d', `M 0 ${personalityScale(25) - personalityScale(33)} v ${personalityScale(33) - personalityScale(17)}`)
+  // .attr('d', `M 0 -${attitudeScale(17)} v ${attitudeScale(33)}`)
   .attr('stroke', 'currentColor')
   .attr('stroke-width', 1)
   .attr('stroke-dasharray', '2')
   .attr('opacity', 0.3);
 
 d3
-  .select('.axis-percentage')
+  .select('.axis-personality')
   .selectAll('g.tick')
   .filter((d, i) => d === 17 | d === 33)
   .append('path')
+  .attr('d', `M ${attitudeScale(25) - attitudeScale(33)} 0 h ${attitudeScale(33) - attitudeScale(17)}`)
   .attr('d', `M -${innerWidth / 4 - 20} 0 h ${innerWidth / 2 - 40}`)
   .attr('stroke', 'currentColor')
   .attr('stroke-width', 1)
@@ -275,7 +257,7 @@ const dataPointsGroup = dataGroup
   .enter()
   .append('g')
   .attr('class', 'data-point')
-  .attr('transform', ({ count, percentage }) => `translate(${countScale(count)} ${percentageScale(percentage)})`);
+  .attr('transform', ({ attitude, personality }) => `translate(${attitudeScale(attitude)} ${personalityScale(personality)})`);
 
 // circles using the defined color
 dataPointsGroup
@@ -288,15 +270,15 @@ dataPointsGroup
 // labels describing the circle elements
 dataPointsGroup
   .append('text')
-  .attr('x', 8)
-  .attr('y', 0)
+  .attr('text-anchor', ({ attitude }, i) => attitude >= 25 ? 'start' : 'end')
+  .attr('x', ({ attitude }, i) => attitude >= 25 ? 10 : -10)
+  .attr('y', ({ personality }, i) => personality >= 25 ? -10 : 10)
   .attr('class', 'name')
-  .text(({ name }, i) => `${name} ${i}`)
+  .text(({ personality, attitude }, i) => `[${personality} ${attitude}]`)
   .attr('dominant-baseline', 'central')
   .style('font-size', '0.55rem')
   .style('letter-spacing', '0.05rem')
   .style('pointer-events', 'none');
-
 
 // on hover highlight the data point
 dataPointsGroup
@@ -308,7 +290,7 @@ dataPointsGroup
 
     text
       .transition()
-      .attr('transform', 'translate(12 0)')
+      .attr('transform', 'translate(0 0)')
       .style('color', 'hsl(230, 29%, 19%)')
       .style('text-shadow', 'none');
 
@@ -341,7 +323,7 @@ dataPointsGroup
       .attr('rx', '2')
       .transition()
       // transition the rectangle to match the text translation
-      .attr('transform', 'translate(12 0)');
+      .attr('transform', 'translate(0 0)');
 
 
     // include the two dotted lines in a group to centralize their common properties
@@ -358,11 +340,11 @@ dataPointsGroup
 
     dashedLines
       .append('path')
-      .attr('d', ({ percentage }) => `M 0 0 v ${percentageScale(percentages.max - percentage)}`);
+      .attr('d', ({ personality }) => `M 0 0 v ${attitudeScale(personality) - attitudeScale(25)}`);
 
     dashedLines
       .append('path')
-      .attr('d', ({ count }) => `M 0 0 h -${countScale(count)}`);
+      .attr('d', ({ attitude }) => `M 0 0 h ${personalityScale(attitude) - personalityScale(25)}`);
 
     // include two labels centered on the axes, highlighting the matching values
     const labels = tooltip
@@ -370,52 +352,9 @@ dataPointsGroup
       .attr('font-size', '0.6rem')
       .attr('fill', 'hsl(227, 9%, 81%)');
 
-    const labelCount = labels
+    const labelattitude = labels
       .append('g')
-      .attr('transform', ({ percentage }) => `translate(0 ${percentageScale(percentages.max - percentage)})`);
-
-    const textCount = labelCount
-      .append('text')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .style('color', 'hsl(230, 29%, 19%)')
-      .text(({ count }) => count);
-
-    const labelPercentage = labels
-      .append('g')
-      .attr('transform', ({ count }) => `translate(-${countScale(count)} 0)`);
-
-    const textPercentage = labelPercentage
-      .append('text')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .style('color', 'hsl(230, 29%, 19%)')
-      .text(({ percentage }) => `${percentage}%`);
-
-    // behind the labels include two rectangles, replicating the faux background specified for the original text element
-    const { width: countWidth, height: countHeight } = textCount['_groups'][0][0].getBBox();
-    const { width: percentageWidth, height: percentageHeight } = textPercentage['_groups'][0][0].getBBox();
-
-    labelCount
-      .insert('rect', ':first-child')
-      .attr('x', -countWidth / 2 - 4)
-      .attr('y', -countHeight / 2 - 2)
-      .attr('width', countWidth + 8)
-      .attr('height', countHeight + 4)
-      .attr('rx', 3);
-
-    labelPercentage
-      .insert('rect', ':first-child')
-      .attr('x', -percentageWidth / 2 - 4)
-      .attr('y', -percentageHeight / 2 - 2)
-      .attr('width', percentageWidth + 8)
-      .attr('height', percentageHeight + 4)
-      .attr('rx', 3);
-
+      .attr('transform', ({ personality }) => `translate(0 ${personalityScale(personalitys.max - personality)})`);
 
     // detail a circle, with a darker fill and a larger radius
     tooltip
