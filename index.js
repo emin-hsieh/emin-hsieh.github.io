@@ -127,16 +127,6 @@ const personalityAxis = d3
   .tickFormat(d => [10, 17, 33, 40].includes(d) ? d : "");
 
 
-
-group
-  .append("rect")
-  .attr("x", innerWidth / 2)
-  .attr("y", innerHeight / 2)
-  .attr("width", attitudeScale(33) - attitudeScale(25))
-  .attr("height", personalityScale(33) - personalityScale(25))
-  .attr('fill', 'white')
-  .attr('opacity', 0.5);
-
 // add classes to later identify the axes individually and jointly
 group
   .append('g')
@@ -270,6 +260,16 @@ const dataPointsGroup = dataGroup
   .append('g')
   .attr('class', 'data-point')
   .attr('transform', ({ attitude, personality }) => `translate(${attitudeScale(attitude)} ${personalityScale(personality)})`);
+
+dataPointsGroup
+  .append("rect")
+  .attr("x", ({ attitude }, i) => attitude >= 25 ? -(attitudeScale(attitude) - attitudeScale(25)) : 0)
+  .attr("y", ({ personality }, i) => personality >= 25 ? -(personalityScale(personality) - personalityScale(25)) : 0)
+  .attr("width", ({ attitude }, i) => attitude >= 25 ? attitudeScale(attitude) - attitudeScale(25) : attitudeScale(25) - attitudeScale(attitude))
+  .attr("height", ({ personality }, i) => personality >= 25 ? personalityScale(personality) - personalityScale(25) : personalityScale(25) - personalityScale(personality))
+  .attr('fill', 'white')
+  .style('pointer-events', 'none')
+  .attr('opacity', 0.5);
 
 // circles using the defined color
 dataPointsGroup
