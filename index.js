@@ -100,6 +100,8 @@ group
 // quadrants and labels
 appendQuadrantsAndLabels(group)
 
+
+
 // scales
 // for both the x and y dimensions define linear scales, using the minimum and maximum values defined earlier
 const attitudeScale = d3
@@ -125,6 +127,15 @@ const personalityAxis = d3
   .tickFormat(d => [10, 17, 33, 40].includes(d) ? d : "");
 
 
+
+group
+  .append("rect")
+  .attr("x", innerWidth / 2)
+  .attr("y", innerHeight / 2)
+  .attr("width", attitudeScale(33) - attitudeScale(25))
+  .attr("height", personalityScale(33) - personalityScale(25))
+  .attr('fill', 'white')
+  .attr('opacity', 0.5);
 
 // add classes to later identify the axes individually and jointly
 group
@@ -273,9 +284,9 @@ dataPointsGroup
   .append('text')
   .attr('text-anchor', ({ attitude }, i) => attitude >= 25 ? 'start' : 'end')
   .attr('x', ({ attitude }, i) => attitude >= 25 ? 10 : -10)
-  .attr('y', ({ personality }, i) => personality >= 25 ? -10 : 10)
+  .attr('y', ({ personality }, i) => personality > 25 ? 10 : -10)
   .attr('class', 'name')
-  .text(({ personality, attitude }, i) => `[${personality} ${attitude}]`)
+  .text(({ personality, attitude }, i) => `[${attitude}, ${personality}]`)
   .attr('dominant-baseline', 'central')
   .style('font-size', '0.55rem')
   .style('letter-spacing', '0.05rem')
